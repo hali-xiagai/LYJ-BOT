@@ -274,7 +274,7 @@ def send_daily_message():
     print(f"✅ 今日推薦歌曲：{song['title']} - {song['artist']}已推播給使用者")
 
 def set_message(song):
-    image_base_url = BASE_URL + "static/imagemap"  # 替換成你的圖片網址
+    image_base_url = BASE_URL + "static/imagemap/"  # 替換成你的圖片網址
     image_base_url = image_base_url.replace("http://", "https://")
 
     imagemap_message = ImagemapMessage(
