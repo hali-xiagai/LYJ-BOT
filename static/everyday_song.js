@@ -41,7 +41,7 @@ function onPlayerStateChange(event) {
             console.warn("profile 尚未取得，無法送出觀看紀錄");
             return;
         }
-
+ 
         fetch("/video_watched", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
