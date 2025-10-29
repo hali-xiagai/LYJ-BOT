@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新增歌曲</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background: #f2f2f2;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 8px;
+            margin: 8px 0;
+            box-sizing: border-box;
+        }
+
+        #submit-btn {
+            width: 100%;
+            padding: 10px;
+            background: #06c755;
+            color: white;
+            border: none;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h2>🎵 新增歌曲</h2>
+        <input id="title" placeholder="歌名" required>
+        <input id="artist" placeholder="歌手" required>
+        <input id="url" placeholder="YouTube連結" required>
+        <input id="year" placeholder="年份" pattern="\d{4}" required>
+        <select id="genre" required>
+            <option value="">請選擇曲風</option>
+            <option value="Pop">流行</option>
+            <option value="Rock">搖滾</option>
+            <option value="Jazz">爵士</option>
+            <option value="Classical">古典</option>
+        </select>
+        <button id="submit-btn" onclick="submitSong()">送出歌曲</button>
+    </div>
+
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script>
+        async function main() {
+            await liff.init({ liffId: "{{ liff_id }}" });
+            profile = await liff.getProfile();
+        }
+
+        async function submitSong() {
+            const btn = document.getElementById("submit-btn");
+
+            const data = {
+                userId: profile.userId,
+                title: document.getElementById("title").value,
+                artist: document.getElementById("artist").value,
+                url: document.getElementById("url").value,
+                year: document.getElementById("year").value,
+                genre: document.getElementById("genre").value
+            };
+
+            // 檢查是否都填寫
+            if (!data.title || !data.artist || !data.url || !data.year || !data.genre) {
+                alert("請填寫所有欄位！");
+                return;
+            }
+
+            // 檢查年份是否為四位數
+            if (!/^\d{4}$/.test(data.year)) {
+                alert("年份格式錯誤，請輸入四位數年份");
+                return;
+            }
+
+            const res = await fetch("/add_song", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+
+            const result = await res.json();
+            alert(result.message);
+            if (result.status === "ok" || result.status === "error") {
+                document.getElementById("title").value = "";
+                document.getElementById("artist").value = "";
+                document.getElementById("url").value = "";
+                document.getElementById("year").value = "";
+                document.getElementById("genre").selectedIndex = 0;
+            }
+            //liff.closeWindow();
+        }
+
+        main();
+    </script>
+</body>
+
+</html>

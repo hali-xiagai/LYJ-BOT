@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>每日推薦</title>
+
+    <!-- ✅ LINE 預覽用 Open Graph 標籤 -->
+    <meta property="og:title" content="每日推薦音樂 🎧">
+    <meta property="og:description" content="每天一首推薦歌曲，打開享受音樂時光 🎵">
+    <meta property="og:image" content="https://你的網站.com/static/cover.jpg">
+    <meta property="og:url" content="https://你的網站.com">
+
+    <!-- ✅ 載入外部 CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <h2>🎶 今日推薦：{{ song["title"] }} - {{ song["artist"] }} 🎶</h2>
+    <div class="video-container">
+        <div id="player"></div>
+    </div>
+    <!-- 傳入影片 ID（而不是整個網址） -->
+
+    <script>
+        const videoId = "{{ song['url'] }}";
+        const LIFF_ID = "{{ liff_url }}";  // Flask 渲染成實際 LIFF ID
+    </script>
+    <!-- 引入 LIFF SDK、YouTube API 和你的外部 JS -->
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script src="{{ url_for('static', filename='everyday_song.js') }}"></script>
+</body>
+
+</html>
