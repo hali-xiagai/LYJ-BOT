@@ -209,7 +209,7 @@ def choose_daily_song():
     with open("today_song.json", "w", encoding="utf-8") as f:
         json.dump(song, f, ensure_ascii=False, indent=2)
     print(f"[{datetime.datetime.now()}] 更新今日歌曲：{song['title']} - {song['artist']}")
-
+    return "Daily song updated"
 
 @app.route("/callback", methods=['POST'])
 def callback():
@@ -242,14 +242,6 @@ def handle_message(event):
     print(f"收到訊息的 userId 是：{user_id}")
     ADMIN_USER_ID = os.getenv("ADMIN_USER_ID")
     if user_id == ADMIN_USER_ID:
-        if event.message.text.strip() == "選單":
-            text = '選單:\n1. 查看所有歌曲\n2. 今日歌曲'
-            line_bot_api.reply_message(
-                ReplyMessageRequest(
-                    reply_token=event.reply_token,
-                    messages=[TextMessage(text=text)]
-                )
-            )
         if event.message.text.strip() == "1":
             songs = song_module.load_songs()
             if not songs:
@@ -279,6 +271,14 @@ def handle_message(event):
                             messages=[text_message, imagemap_message]
                         )
                     )
+        else:
+            text = '選單:\n1. 查看所有歌曲\n2. 今日歌曲'
+            line_bot_api.reply_message(
+                ReplyMessageRequest(
+                    reply_token=event.reply_token,
+                    messages=[TextMessage(text=text)]
+                )
+            )
             
 @app.route("/send_daily_message", methods=["GET"])
 def send_daily_message():
@@ -298,6 +298,7 @@ def send_daily_message():
             messages=[text_message, imagemap_message]  # 直接放 Message object
         ))
     print(f"✅ 今日推薦歌曲：{song['title']} - {song['artist']}已推播給使用者")
+    return "Daily message sent"
 
 def set_message(song):
     image_base_url = BASE_URL + "/static/imagemap"  # 替換成你的圖片網址
