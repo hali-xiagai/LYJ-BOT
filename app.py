@@ -76,6 +76,10 @@ with ApiClient(configuration) as api_client:
 # 假設 liff_url 是你的 LIFF 網頁
 liff_url = "https://liff.line.me/" + liff_id_everyday_song
 
+@app.route("/")
+def home():
+    return "Sever is running."
+
 @app.route("/everyday_song")
 def everyday_song():
     with open("today_song.json", "r", encoding="utf-8") as f:
