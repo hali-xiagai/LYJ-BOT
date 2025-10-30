@@ -197,6 +197,7 @@ def save_user_ids(user_ids):
     with open(USER_FILE, 'w', encoding='utf-8') as f:
         json.dump(user_ids, f, ensure_ascii=False, indent=2)
 
+@app.route("/choose_daily_song", methods=["GET"])
 def choose_daily_song():
     songs = song_module.load_songs()
     if not songs:
@@ -239,7 +240,42 @@ def handle_follow(event):
 def handle_message(event):
     user_id = event.source.user_id
     print(f"收到訊息的 userId 是：{user_id}")
-
+    ADMIN_USER_ID = os.getenv("ADMIN_USER_ID")
+    if user_id == ADMIN_USER_ID:
+        if event.message.text.strip() == "選單":
+            text = '選單:\n1. 查看所有歌曲\n2. 今日歌曲'
+            line_bot_api.reply_message(
+                ReplyMessageRequest(
+                    reply_token=event.reply_token,
+                    messages=[TextMessage(text=text)]
+                )
+            )
+        if event.message.text.strip() == "1":
+            songs = song_module.load_songs()
+            if not songs:
+                line_bot_api.reply_message(
+                    ReplyMessageRequest(
+                        reply_token=event.reply_token,
+                        messages=[TextMessage(text="目前沒有任何歌曲喔！")]
+                    )
+                )
+                return
+            song_list = "\n".join([f"{song['id']}. {song['title']} - {song['artist']}" for song in songs])
+            line_bot_api.reply_message(
+                ReplyMessageRequest(
+                    reply_token=event.reply_token,
+                    messages=[TextMessage(text=f"目前所有歌曲如下：\n{song_list}")]
+                )
+            )
+        elif event.message.text.strip() == "2":
+            with open("today_song.json", "r", encoding="utf-8") as f:
+                song = json.load(f)
+            line_bot_api.reply_message(
+                ReplyMessageRequest(
+                    reply_token=event.reply_token,
+                    messages=[TextMessage(text=f"今天推薦的歌曲是{song['title']} - {song['artist']}")]
+                )
+            )
     # print(request.host_url)
     # print(request.url_root)
     # 使用 v3 的 MessagingApi 回覆訊息
@@ -254,7 +290,7 @@ def handle_message(event):
                     messages=[text_message, imagemap_message]
                 )
             )
-
+@app.route("/send_daily_message", methods=["GET"])
 def send_daily_message():
     user_ids = load_user_ids()
     with open("today_song.json", "r", encoding="utf-8") as f:
@@ -290,14 +326,6 @@ def set_message(song):
     ]
 )
     return imagemap_message
-
-
-scheduler = BackgroundScheduler()
-# 每天早上 4:00 更新今日歌曲
-scheduler.add_job(choose_daily_song, "cron", hour=4, minute=00)
-# 每天早上 9:00 發送訊息
-scheduler.add_job(send_daily_message, 'cron', hour=9, minute=00)
-scheduler.start()
 
 if __name__ == "__main__":
     app.run(port=5001)
