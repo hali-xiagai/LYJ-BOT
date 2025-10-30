@@ -267,29 +267,19 @@ def handle_message(event):
                     messages=[TextMessage(text=f"目前所有歌曲如下：\n{song_list}")]
                 )
             )
-        elif event.message.text.strip() == "2":
+        if event.message.text.strip() == "2":
             with open("today_song.json", "r", encoding="utf-8") as f:
                 song = json.load(f)
+            imagemap_message = set_message(song)
+            text_message = TextMessage(
+            text=f"🎶 點擊收聽今日推薦歌曲：{song['title']} - {song['artist']} 暖你一整天")
             line_bot_api.reply_message(
-                ReplyMessageRequest(
-                    reply_token=event.reply_token,
-                    messages=[TextMessage(text=f"今天推薦的歌曲是{song['title']} - {song['artist']}")]
-                )
-            )
-    # print(request.host_url)
-    # print(request.url_root)
-    # 使用 v3 的 MessagingApi 回覆訊息
-    with open("today_song.json", "r", encoding="utf-8") as f:
-        song = json.load(f)
-    imagemap_message = set_message(song)
-    text_message = TextMessage(
-    text=f"🎶 點擊收聽今日推薦歌曲：{song['title']} - {song['artist']} 暖你一整天")
-    line_bot_api.reply_message(
-                ReplyMessageRequest(
-                    reply_token=event.reply_token,
-                    messages=[text_message, imagemap_message]
-                )
-            )
+                        ReplyMessageRequest(
+                            reply_token=event.reply_token,
+                            messages=[text_message, imagemap_message]
+                        )
+                    )
+            
 @app.route("/send_daily_message", methods=["GET"])
 def send_daily_message():
     user_ids = load_user_ids()
