@@ -76,8 +76,14 @@ with ApiClient(configuration) as api_client:
 # 假設 liff_url 是你的 LIFF 網頁
 liff_url = "https://liff.line.me/" + liff_id_everyday_song
 
-@app.route("/")
+@app.route("/", methods=["POST"])
 def home():
+    # 從 POST body 拿 token
+    data = request.get_json()
+    token = data.get("token") if data else None
+
+    if token != os.getenv("ADMIN_TOKEN"):
+        return jsonify({"error": "Unauthorized"}), 403
     return "Sever is running."
 
 @app.route("/everyday_song")
@@ -107,6 +113,7 @@ def video_watched():
 
 @app.route('/song', methods=['GET'])
 def song_form():
+
     return render_template('add_song.html', liff_id=liff_id_add_song)
 
 @app.route("/add_song", methods=["POST"])
