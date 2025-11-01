@@ -56,6 +56,7 @@ channel_access_token=os.getenv("CHANNEL_ACCESS_TOKEN")
 channel_secret=os.getenv("CHANNEL_SECRET")
 liff_id_everyday_song=os.getenv("LIFF_EVERYDAY_SONG_CHANNEL_ID")
 liff_id_add_song=os.getenv("LIFF_ADD_SONG_CHANNEL_ID")
+admin_token=os.getenv("ADMIN_TOKEN")
 BASE_URL=os.getenv("ROOT_URL")
 
 if channel_secret is None:
@@ -76,13 +77,14 @@ with ApiClient(configuration) as api_client:
 # 假設 liff_url 是你的 LIFF 網頁
 liff_url = "https://liff.line.me/" + liff_id_everyday_song
 
-@app.route("/", methods=["POST"])
+@app.route("/", methods=["GET", "POST", "HEAD"])
 def home():
     # 從 POST body 拿 token
-    data = request.get_json()
-    token = data.get("token") if data else None
+    token = request.form.get("token")
+    # token = data.get("token") if data else None
 
-    if token != os.getenv("ADMIN_TOKEN"):
+    print("Received token:", token)
+    if token != admin_token:
         return jsonify({"error": "Unauthorized"}), 403
     return "Sever is running."
 
@@ -214,7 +216,7 @@ def choose_daily_song():
     data = request.get_json()
     token = data.get("token") if data else None
 
-    if token != os.getenv("ADMIN_TOKEN"):
+    if token != admin_token:
         return jsonify({"error": "Unauthorized"}), 403
     
     songs = song_module.load_songs()
@@ -282,7 +284,7 @@ def handle_message(event):
                 song = json.load(f)
             imagemap_message = set_message(song)
             text_message = TextMessage(
-            text=f"🎶 點擊收聽今日推薦歌曲：{song['title']} - {song['artist']} 暖你一整天")
+            text=f"{song['date']}推薦歌曲：{song['title']} - {song['artist']}")
             line_bot_api.reply_message(
                         ReplyMessageRequest(
                             reply_token=event.reply_token,
@@ -300,14 +302,12 @@ def handle_message(event):
             
 @app.route("/send_daily_message", methods=["POST"])
 def send_daily_message():
-    user_ids = load_user_ids()
-    # 從 POST body 拿 token
     data = request.get_json()
     token = data.get("token") if data else None
-
-    if token != os.getenv("ADMIN_TOKEN"):
+    if token != admin_token:
         return jsonify({"error": "Unauthorized"}), 403
     
+    user_ids = load_user_ids()
     with open("today_song.json", "r", encoding="utf-8") as f:
         song = json.load(f)   
     imagemap_message = set_message(song)
