@@ -201,8 +201,15 @@ def save_user_ids(user_ids):
     with open(USER_FILE, 'w', encoding='utf-8') as f:
         json.dump(user_ids, f, ensure_ascii=False, indent=2)
 
-@app.route("/choose_daily_song", methods=["GET"])
+@app.route("/choose_daily_song", methods=["POST"])
 def choose_daily_song():
+    # 從 POST body 拿 token
+    data = request.get_json()
+    token = data.get("token") if data else None
+
+    if token != os.getenv("ADMIN_TOKEN"):
+        return jsonify({"error": "Unauthorized"}), 403
+    
     songs = song_module.load_songs()
     if not songs:
         return None
@@ -284,12 +291,18 @@ def handle_message(event):
                 )
             )
             
-@app.route("/send_daily_message", methods=["GET"])
+@app.route("/send_daily_message", methods=["POST"])
 def send_daily_message():
     user_ids = load_user_ids()
+    # 從 POST body 拿 token
+    data = request.get_json()
+    token = data.get("token") if data else None
+
+    if token != os.getenv("ADMIN_TOKEN"):
+        return jsonify({"error": "Unauthorized"}), 403
+    
     with open("today_song.json", "r", encoding="utf-8") as f:
-        song = json.load(f)
-        
+        song = json.load(f)   
     imagemap_message = set_message(song)
     text_message = TextMessage(
     text=f"🎶 今日推薦歌曲：{song['title']} - {song['artist']} 暖你一整天")
