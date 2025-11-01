@@ -77,11 +77,10 @@ with ApiClient(configuration) as api_client:
 # 假設 liff_url 是你的 LIFF 網頁
 liff_url = "https://liff.line.me/" + liff_id_everyday_song
 
-@app.route("/", methods=["GET", "POST", "HEAD"])
+@app.route("/", methods=["POST"])
 def home():
     # 從 POST body 拿 token
     token = request.form.get("token")
-    # token = data.get("token") if data else None
 
     print("Received token:", token)
     if token != admin_token:
@@ -212,10 +211,8 @@ def save_user_ids(user_ids):
 
 @app.route("/choose_daily_song", methods=["POST"])
 def choose_daily_song():
-    # 從 POST body 拿 token
-    data = request.get_json()
-    token = data.get("token") if data else None
-
+    token = request.form.get("token")
+    print("Received token:", token)
     if token != admin_token:
         return jsonify({"error": "Unauthorized"}), 403
     
@@ -302,8 +299,8 @@ def handle_message(event):
             
 @app.route("/send_daily_message", methods=["POST"])
 def send_daily_message():
-    data = request.get_json()
-    token = data.get("token") if data else None
+    token = request.form.get("token")
+    print("Received token:", token)
     if token != admin_token:
         return jsonify({"error": "Unauthorized"}), 403
     
